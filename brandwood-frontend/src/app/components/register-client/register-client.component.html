@@ -1,0 +1,157 @@
+<div class="auth-wrapper">
+
+  <!-- Panneau gauche -->
+  <div class="auth-panel-left d-none d-lg-flex flex-column">
+    <div class="auth-logo">SaaS</div>
+    <p class="auth-tagline">Rejoignez la plateforme qui donne de la visibilité à vos projets</p>
+    <div class="mt-4 p-4 d-flex flex-column align-items-center gap-2 text-center" style="background:rgba(255,255,255,.1);border-radius:16px;z-index:1;">
+      <i class="bi bi-building" style="font-size:2.5rem;"></i>
+      <div class="feature-title" style="font-size:1rem;">Compte Client</div>
+      <p class="feature-desc">Suivez vos projets, campagnes, facturation et bien plus depuis un seul tableau de bord.</p>
+    </div>
+  </div>
+
+  <!-- Panneau droit -->
+  <div class="auth-panel-right">
+    <div class="auth-card" style="max-width:500px;">
+
+      <!-- Logo mobile -->
+      <div class="d-lg-none text-center mb-4">
+        <span class="mobile-logo">SaaS</span>
+      </div>
+
+      <!-- Succès -->
+      <div *ngIf="success" class="text-center py-4">
+        <div style="width:80px;height:80px;background:#DCFCE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+          <i class="bi bi-envelope-check-fill" style="font-size:2rem;color:#166534;"></i>
+        </div>
+        <h3 style="font-weight:700;">Inscription réussie !</h3>
+        <p style="color:var(--saas-muted);">Un code de vérification a été envoyé à <strong>{{ f['email'].value }}</strong>.<br>Redirection en cours…</p>
+        <div class="spinner-border mt-2" style="color:var(--saas-p1);" role="status"></div>
+      </div>
+
+      <ng-container *ngIf="!success">
+        <h2>Créer un compte Client</h2>
+        <p class="subtitle">Renseignez vos informations pour commencer</p>
+
+        <div *ngIf="error" class="alert alert-danger d-flex gap-2 align-items-center">
+          <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>{{ error }}
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+          <!-- Prénom / Nom -->
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label">Prénom <span style="color:#EF4444;">*</span></label>
+              <input type="text" class="form-control"
+                [class.is-invalid]="f['firstName'].invalid && f['firstName'].touched"
+                formControlName="firstName" placeholder="Alice">
+              <div class="invalid-feedback">Obligatoire</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Nom <span style="color:#EF4444;">*</span></label>
+              <input type="text" class="form-control"
+                [class.is-invalid]="f['lastName'].invalid && f['lastName'].touched"
+                formControlName="lastName" placeholder="Dupont">
+              <div class="invalid-feedback">Obligatoire</div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Email professionnel <span style="color:#EF4444;">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control"
+                [class.is-invalid]="f['email'].invalid && f['email'].touched"
+                formControlName="email" placeholder="vous@entreprise.com">
+            </div>
+            <div *ngIf="f['email'].invalid && f['email'].touched" class="invalid-feedback d-block">
+              {{ f['email'].errors?.['required'] ? 'L\'email est obligatoire' : 'Format invalide' }}
+            </div>
+          </div>
+
+          <!-- Entreprise / Téléphone -->
+          <div class="row g-3 mb-3">
+            <div class="col-sm-8">
+              <label class="form-label">Entreprise <span style="color:#EF4444;">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                <input type="text" class="form-control"
+                  [class.is-invalid]="f['companyName'].invalid && f['companyName'].touched"
+                  formControlName="companyName" placeholder="ACME Corp">
+              </div>
+              <div *ngIf="f['companyName'].invalid && f['companyName'].touched" class="invalid-feedback d-block">Obligatoire</div>
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Téléphone</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input type="tel" class="form-control" formControlName="phone" placeholder="+216…">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="mb-1">
+            <label class="form-label">Mot de passe <span style="color:#EF4444;">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                [class.is-invalid]="f['password'].invalid && f['password'].touched"
+                formControlName="password" placeholder="Min. 8 caractères">
+              <button type="button" class="password-toggle" (click)="showPassword=!showPassword" tabindex="-1">
+                <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+              </button>
+            </div>
+            <div *ngIf="f['password'].invalid && f['password'].touched" class="invalid-feedback d-block">
+              <ng-container *ngIf="f['password'].errors?.['required']">Obligatoire.</ng-container>
+              <ng-container *ngIf="f['password'].errors?.['minlength']">Min. 8 caractères.</ng-container>
+              <ng-container *ngIf="f['password'].errors?.['pattern']">Majuscule, minuscule et chiffre requis.</ng-container>
+            </div>
+          </div>
+
+          <!-- Indicateur force -->
+          <div class="mb-3" *ngIf="f['password'].value">
+            <div class="d-flex gap-1 mt-2">
+              <div *ngFor="let i of [1,2,3,4,5]" class="strength-bar flex-grow-1"
+                [style.background]="i <= passwordStrength ? strengthColor : '#E5E7EB'"></div>
+            </div>
+            <small class="mt-1 d-block" [style.color]="strengthColor">{{ strengthLabel }}</small>
+          </div>
+
+          <!-- Confirmation mot de passe -->
+          <div class="mb-4">
+            <label class="form-label">Confirmer le mot de passe <span style="color:#EF4444;">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input [type]="showConfirm ? 'text' : 'password'" class="form-control"
+                [class.is-invalid]="f['confirmPassword'].touched && (form.errors?.['passwordMismatch'] || f['confirmPassword'].invalid)"
+                formControlName="confirmPassword" placeholder="Retapez votre mot de passe">
+              <button type="button" class="password-toggle" (click)="showConfirm=!showConfirm" tabindex="-1">
+                <i class="bi" [class.bi-eye]="!showConfirm" [class.bi-eye-slash]="showConfirm"></i>
+              </button>
+            </div>
+            <div *ngIf="f['confirmPassword'].touched && form.errors?.['passwordMismatch']" class="invalid-feedback d-block">
+              Les mots de passe ne correspondent pas
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-gradient w-100 mb-3" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></span>
+            {{ loading ? 'Inscription…' : 'Créer mon compte' }}
+          </button>
+
+        </form>
+
+        <p class="text-center mb-1" style="font-size:.85rem;color:var(--saas-muted);">
+          Déjà un compte ? <a routerLink="/login" class="link-primary">Se connecter</a>
+        </p>
+        <p class="text-center mb-0" style="font-size:.85rem;color:var(--saas-muted);">
+          Vous êtes prestataire ? <a routerLink="/register/prestataire" class="link-primary">Compte Prestataire</a>
+        </p>
+      </ng-container>
+    </div>
+  </div>
+</div>
