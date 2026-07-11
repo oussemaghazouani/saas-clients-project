@@ -1,0 +1,21 @@
+<div class="notif-wrap" *ngIf="loggedIn">
+  <button class="notif-btn" (click)="toggle()" title="Notifications">
+    <i class="bi bi-bell"></i>
+    <span class="notif-badge" *ngIf="nonLues > 0">{{ nonLues > 9 ? '9+' : nonLues }}</span>
+  </button>
+
+  <div class="notif-panel" *ngIf="open">
+    <div class="notif-panel-head">
+      <span>Notifications</span>
+      <a *ngIf="nonLues > 0" (click)="toutLu()" style="cursor:pointer;font-size:.72rem;color:#fff;text-decoration:underline">Tout marquer lu</a>
+    </div>
+    <div class="notif-list">
+      <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.lu" (click)="clic(n)">
+        <div class="notif-item-title">{{ n.titre }}</div>
+        <div class="notif-item-msg">{{ n.message }}</div>
+        <div class="notif-item-time">{{ n.createdAt | date:'dd/MM à HH:mm' }}</div>
+      </div>
+      <div *ngIf="notifications.length === 0" class="text-center text-muted py-4" style="font-size:.82rem">Aucune notification.</div>
+    </div>
+  </div>
+</div>

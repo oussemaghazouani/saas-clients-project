@@ -1,0 +1,58 @@
+<div class="rapport-page">
+
+  <div class="rapport-toolbar no-print">
+    <a [routerLink]="rapport ? ['/projets', rapport.projetId] : ['/projets']" class="btn-outline-saas">
+      <i class="bi bi-arrow-left"></i> Retour
+    </a>
+    <button class="btn-primary-gradient" (click)="imprimer()" [disabled]="!rapport">
+      <i class="bi bi-printer"></i> Imprimer / Télécharger PDF
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+  <div *ngIf="error" class="alert alert-danger no-print">{{ error }}</div>
+
+  <div class="rapport-doc" *ngIf="rapport">
+    <div class="rapport-head">
+      <div>
+        <div class="rapport-brand"><i class="bi bi-bar-chart-line-fill"></i> SaaS Client</div>
+        <div class="rapport-title">Rapport de projet</div>
+      </div>
+      <div class="rapport-meta">Généré le {{ rapport.generatedAt | date:'dd/MM/yyyy à HH:mm' }}</div>
+    </div>
+
+    <h1 class="rapport-projet-nom">{{ rapport.nom }}</h1>
+    <p class="rapport-desc">{{ rapport.description || '—' }}</p>
+
+    <div class="rapport-section-title">Informations générales</div>
+    <table class="rapport-table">
+      <tr><th>Client</th><td>{{ rapport.clientNom }}</td><th>Prestataire</th><td>{{ rapport.prestataireNom }}</td></tr>
+      <tr><th>Statut</th><td>{{ rapport.statut }}</td><th>Budget</th><td>{{ rapport.budget != null ? (rapport.budget + ' €') : '—' }}</td></tr>
+      <tr><th>Début</th><td>{{ rapport.dateDebut || '—' }}</td><th>Fin</th><td>{{ rapport.dateFin || '—' }}</td></tr>
+      <tr><th>Technologies</th><td colspan="3">{{ rapport.technologies && rapport.technologies.length ? rapport.technologies.join(', ') : '—' }}</td></tr>
+    </table>
+
+    <div class="rapport-section-title">Indicateurs clés</div>
+    <div class="rapport-kpis">
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.progression }}%</div><div class="rapport-kpi-lbl">Progression</div></div>
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.jalonsAtteints }}/{{ rapport.jalonsTotal }}</div><div class="rapport-kpi-lbl">Jalons atteints</div></div>
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.tachesTerminees }}/{{ rapport.tachesTotal }}</div><div class="rapport-kpi-lbl">Tâches terminées</div></div>
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.tachesEnRetard }}</div><div class="rapport-kpi-lbl">Tâches en retard</div></div>
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.nbMembres }}</div><div class="rapport-kpi-lbl">Membres</div></div>
+      <div class="rapport-kpi"><div class="rapport-kpi-val">{{ rapport.nbReunions }}</div><div class="rapport-kpi-lbl">Réunions</div></div>
+    </div>
+
+    <div class="rapport-section-title">Avancement des tâches</div>
+    <div class="rapport-bar"><div class="rapport-bar-fill" [style.width.%]="taux()"></div></div>
+    <p class="rapport-desc">{{ taux() }}% des tâches terminées · {{ rapport.tachesEnCours }} en cours · {{ rapport.tachesEnRetard }} en retard</p>
+
+    <div class="rapport-section-title">Équipe du projet ({{ rapport.nbMembres }})</div>
+    <table class="rapport-table" *ngIf="rapport.membres && rapport.membres.length">
+      <tr><th>Membre</th><th>Rôle</th><th>Email</th></tr>
+      <tr *ngFor="let m of rapport.membres"><td>{{ m.prenom }} {{ m.nom }}</td><td>{{ m.roleProjet }}</td><td>{{ m.email || '—' }}</td></tr>
+    </table>
+    <p class="rapport-desc" *ngIf="!rapport.membres || !rapport.membres.length">Aucun membre dans l'équipe.</p>
+
+    <div class="rapport-footer">Document généré automatiquement par la plateforme SaaS Client.</div>
+  </div>
+</div>
