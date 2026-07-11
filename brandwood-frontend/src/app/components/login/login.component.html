@@ -1,0 +1,137 @@
+<div class="auth-wrapper">
+
+  <!-- Panneau gauche gradient -->
+  <div class="auth-panel-left d-none d-lg-flex flex-column">
+    <div class="auth-badge"><i class="bi bi-stars"></i> Plateforme SaaS d'analyse</div>
+
+    <div class="auth-brand">
+      <span class="auth-brand-icon"><i class="bi bi-bar-chart-line-fill"></i></span>
+      SaaS Client
+    </div>
+    <p class="auth-tagline">Analysez, suivez et pilotez vos projets et vos clients — dans un seul espace collaboratif.</p>
+
+    <div class="d-flex flex-column gap-3" style="z-index:1;">
+      <div class="feature-item">
+        <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
+        <div>
+          <div class="feature-title">Tableaux de bord en temps réel</div>
+          <div class="feature-desc">Suivez vos KPIs instantanément</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="bi bi-robot"></i></div>
+        <div>
+          <div class="feature-title">Assistant IA intégré</div>
+          <div class="feature-desc">Analyses et réponses intelligentes</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="bi bi-people"></i></div>
+        <div>
+          <div class="feature-title">Espace collaboratif</div>
+          <div class="feature-desc">Clients et prestataires réunis</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+        <div>
+          <div class="feature-title">Sécurité &amp; confidentialité</div>
+          <div class="feature-desc">Données chiffrées et protégées</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-stats">
+      <div><div class="auth-stat-val">7</div><div class="auth-stat-lbl">Modules</div></div>
+      <div><div class="auth-stat-val">3</div><div class="auth-stat-lbl">Rôles</div></div>
+      <div><div class="auth-stat-val">IA</div><div class="auth-stat-lbl">Assistant</div></div>
+    </div>
+  </div>
+
+  <!-- Panneau droit formulaire -->
+  <div class="auth-panel-right">
+    <div class="auth-card">
+
+      <!-- Logo mobile -->
+      <div class="d-lg-none text-center mb-4">
+        <span class="mobile-logo">SaaS Client</span>
+      </div>
+
+      <h2>Bon retour&nbsp;!</h2>
+      <p class="subtitle">Connectez-vous à votre espace</p>
+
+      <!-- Erreur globale -->
+      <div *ngIf="error" class="alert alert-danger d-flex align-items-center gap-2 mb-3">
+        <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+        <span>{{ error }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">Adresse email</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control"
+              [class.is-invalid]="f['email'].invalid && f['email'].touched"
+              formControlName="email"
+              placeholder="vous@exemple.com"
+              autocomplete="email"/>
+          </div>
+          <div *ngIf="f['email'].invalid && f['email'].touched" class="invalid-feedback d-block">
+            {{ f['email'].errors?.['required'] ? 'L\'email est obligatoire' : 'Format invalide' }}
+          </div>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label mb-0">Mot de passe</label>
+            <a routerLink="/forgot-password" class="link-primary" style="font-size:.8rem;">Mot de passe oublié&nbsp;?</a>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+              [class.is-invalid]="f['password'].invalid && f['password'].touched"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"/>
+            <button type="button" class="password-toggle" (click)="togglePassword()" tabindex="-1">
+              <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+          <div *ngIf="f['password'].invalid && f['password'].touched" class="invalid-feedback d-block">
+            Le mot de passe est obligatoire
+          </div>
+        </div>
+
+        <!-- Bouton connexion -->
+        <button type="submit" class="btn-primary-gradient w-100 mb-3" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status"></span>
+          {{ loading ? 'Connexion…' : 'Se connecter' }}
+          <i *ngIf="!loading" class="bi bi-arrow-right ms-1"></i>
+        </button>
+
+      </form>
+
+      <!-- Séparateur -->
+      <div class="d-flex align-items-center gap-2 my-3">
+        <hr class="flex-grow-1 m-0">
+        <span style="font-size:.8rem;color:var(--saas-light);">Nouveau&nbsp;?</span>
+        <hr class="flex-grow-1 m-0">
+      </div>
+
+      <!-- Boutons inscription -->
+      <div class="d-grid gap-2">
+        <a routerLink="/register/client" class="btn-outline-saas">
+          <i class="bi bi-building"></i> Créer un compte Client
+        </a>
+        <a routerLink="/register/prestataire" class="btn-outline-saas">
+          <i class="bi bi-person-gear"></i> Créer un compte Prestataire
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
