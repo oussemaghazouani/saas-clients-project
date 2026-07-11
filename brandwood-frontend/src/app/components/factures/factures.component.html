@@ -1,0 +1,88 @@
+<app-layout title="Facturation">
+  <div *ngIf="message" class="alert alert-success mb-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+
+  <div class="d-flex justify-content-end mb-3" *ngIf="isPrestataire">
+    <button class="btn-primary-gradient" (click)="nouveau()"><i class="bi bi-plus-lg"></i> Nouvelle facture</button>
+  </div>
+
+  <!-- Formulaire de création -->
+  <div class="content-card mb-3" *ngIf="showForm">
+    <div class="section-title mb-3">Nouvelle facture</div>
+    <form [formGroup]="form" (ngSubmit)="creer()">
+      <div class="row g-3 mb-2">
+        <div class="col-md-4">
+          <label class="form-label">Client</label>
+          <select class="form-select" formControlName="startupId">
+            <option [ngValue]="null">— Choisir —</option>
+            <option *ngFor="let c of clients" [ngValue]="c.id">{{ c.firstName }} {{ c.lastName }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Projet (optionnel)</label>
+          <select class="form-select" formControlName="projetId">
+            <option [ngValue]="null">— Aucun —</option>
+            <option *ngFor="let p of projets" [ngValue]="p.id">{{ p.nom }}</option>
+          </select>
+        </div>
+        <div class="col-md-2"><label class="form-label">TVA (%)</label><input type="number" class="form-control" formControlName="tauxTva"></div>
+        <div class="col-md-2"><label class="form-label">Échéance</label><input type="date" class="form-control" formControlName="dateEcheance"></div>
+      </div>
+
+      <div class="section-title mb-2" style="font-size:.85rem">Lignes</div>
+      <div formArrayName="lignes">
+        <div class="row g-2 mb-2 align-items-center" *ngFor="let l of lignes.controls; let i=index" [formGroupName]="i">
+          <div class="col-md-6"><input class="form-control" formControlName="description" placeholder="Description de la prestation"></div>
+          <div class="col-md-2"><input type="number" class="form-control" formControlName="quantite" placeholder="Qté"></div>
+          <div class="col-md-3"><input type="number" class="form-control" formControlName="prixUnitaire" placeholder="Prix unitaire (€)"></div>
+          <div class="col-md-1 text-end"><button type="button" class="icon-btn-muted text-danger" (click)="retirerLigne(i)"><i class="bi bi-x-lg"></i></button></div>
+        </div>
+      </div>
+      <button type="button" class="btn-outline-saas" style="padding:.35rem .8rem;font-size:.8rem" (click)="ajouterLigne()"><i class="bi bi-plus"></i> Ajouter une ligne</button>
+
+      <div class="d-flex justify-content-end gap-4 mt-3" style="font-size:.92rem">
+        <div>Total HT : <strong>{{ totalHt | number:'1.2-2' }} €</strong></div>
+        <div>Total TTC : <strong style="color:var(--saas-p1)">{{ totalTtc | number:'1.2-2' }} €</strong></div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn-primary-gradient">Créer la facture</button>
+        <button type="button" class="btn-outline-saas" (click)="showForm=false">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Liste -->
+  <div class="content-card">
+    <div class="section-title mb-3">Factures <span class="count-pill">{{ factures.length }}</span></div>
+    <div *ngIf="loading" class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>N°</th><th>{{ isPrestataire ? 'Client' : 'Prestataire' }}</th>
+            <th>Montant TTC</th><th>Émission</th><th>Statut</th><th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of factures">
+            <td><strong>{{ f.numero }}</strong></td>
+            <td>{{ isPrestataire ? f.clientNom : f.prestataireNom }}</td>
+            <td>{{ f.montantTtc | number:'1.2-2' }} €</td>
+            <td>{{ f.dateEmission || '—' }}</td>
+            <td><span [class]="badge(f.statut)">{{ f.statut }}</span></td>
+            <td class="text-end" style="white-space:nowrap">
+              <a [routerLink]="['/factures', f.id]" class="icon-btn-muted" title="Voir / PDF"><i class="bi bi-file-earmark-text"></i></a>
+              <ng-container *ngIf="isPrestataire">
+                <button class="icon-btn-muted" title="Envoyer au client" (click)="changerStatut(f,'ENVOYEE')" [disabled]="f.statut!=='BROUILLON'"><i class="bi bi-send"></i></button>
+                <button class="icon-btn-muted" title="Marquer payée" (click)="changerStatut(f,'PAYEE')" [disabled]="f.statut==='PAYEE' || f.statut==='ANNULEE'"><i class="bi bi-check2-circle"></i></button>
+                <button class="icon-btn-muted text-danger" title="Supprimer" (click)="supprimer(f)"><i class="bi bi-trash"></i></button>
+              </ng-container>
+            </td>
+          </tr>
+          <tr *ngIf="factures.length===0"><td colspan="6" class="text-center text-muted py-4">Aucune facture.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>

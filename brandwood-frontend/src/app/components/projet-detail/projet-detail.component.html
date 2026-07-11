@@ -1,0 +1,241 @@
+<app-layout title="Détail du projet">
+  <a routerLink="/projets" class="link-primary" style="font-size:.85rem"><i class="bi bi-arrow-left"></i> Retour aux projets</a>
+
+  <div *ngIf="message" class="alert alert-success my-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger my-3">{{ error }}</div>
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div *ngIf="!loading && projet">
+    <div class="d-flex justify-content-between align-items-start my-3 flex-wrap gap-2">
+      <div>
+        <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 .3rem">{{ projet.nom }}</h1>
+        <span [ngClass]="statutBadge(projet.statut)">{{ projet.statut }}</span>
+      </div>
+      <div class="d-flex gap-2">
+        <a [routerLink]="['/projets', projet.id, 'rapport']" class="btn-primary-gradient" style="padding:.5rem 1rem;text-decoration:none">
+          <i class="bi bi-file-earmark-pdf"></i> Rapport PDF
+        </a>
+        <button *ngIf="isPrestataire" class="btn-outline-saas" (click)="supprimerProjet()"><i class="bi bi-trash"></i> Supprimer</button>
+      </div>
+    </div>
+
+    <!-- 4 cartes de stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3"><div class="kpi-card"><div><div class="kpi-label">Progression</div><div class="kpi-value">{{ projet.progression }}%</div></div><div class="kpi-icon-wrap" style="background:rgba(108,99,255,.12);color:#6C63FF"><i class="bi bi-graph-up-arrow"></i></div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi-card"><div><div class="kpi-label">Jalons</div><div class="kpi-value">{{ projet.jalonsAtteints }}/{{ projet.nbJalons }}</div></div><div class="kpi-icon-wrap" style="background:rgba(59,130,246,.12);color:#3B82F6"><i class="bi bi-flag"></i></div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi-card"><div><div class="kpi-label">Budget</div><div class="kpi-value" style="font-size:1.5rem">{{ projet.budget || 0 }} €</div></div><div class="kpi-icon-wrap" style="background:rgba(16,185,129,.12);color:#10B981"><i class="bi bi-cash-coin"></i></div></div></div>
+      <div class="col-6 col-xl-3"><div class="kpi-card"><div><div class="kpi-label">{{ isPrestataire ? 'Client' : 'Prestataire' }}</div><div style="font-size:1rem;font-weight:700;margin-top:.4rem">{{ isPrestataire ? projet.clientNom : projet.prestataireNom }}</div></div><div class="kpi-icon-wrap" style="background:rgba(245,158,11,.12);color:#F59E0B"><i class="bi bi-person-badge"></i></div></div></div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="content-card">
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='apercu'"   (click)="activeTab='apercu'"   style="cursor:pointer">Aperçu</a></li>
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='jalons'"   (click)="activeTab='jalons'"   style="cursor:pointer">Jalons ({{ jalons.length }})</a></li>
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='taches'"   (click)="activeTab='taches'"   style="cursor:pointer">Tâches</a></li>
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='membres'"  (click)="activeTab='membres'"  style="cursor:pointer">Membres</a></li>
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='reunions'" (click)="activeTab='reunions'" style="cursor:pointer">Réunions</a></li>
+        <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='activite'" (click)="activeTab='activite'" style="cursor:pointer">Activité</a></li>
+      </ul>
+
+      <!-- Aperçu -->
+      <div *ngIf="activeTab==='apercu'">
+        <p style="color:var(--saas-muted)">{{ projet.description || 'Aucune description.' }}</p>
+        <div class="row g-2" style="font-size:.85rem">
+          <div class="col-md-6"><strong>Début :</strong> {{ projet.dateDebut || '—' }}</div>
+          <div class="col-md-6"><strong>Fin :</strong> {{ projet.dateFin || '—' }}</div>
+        </div>
+        <div class="mt-3">
+          <strong style="font-size:.85rem">Technologies :</strong>
+          <span *ngFor="let t of projet.technologies" class="badge-category ms-1">{{ t }}</span>
+          <span *ngIf="projet.technologies.length===0" class="text-muted">—</span>
+        </div>
+        <div class="progress-saas mt-3"><div class="progress-saas-fill" [style.width.%]="projet.progression"></div></div>
+      </div>
+
+      <!-- Jalons -->
+      <div *ngIf="activeTab==='jalons'">
+        <div class="d-flex justify-content-end mb-2" *ngIf="isPrestataire">
+          <button class="btn-primary-gradient" style="padding:.45rem .9rem" (click)="showJalonForm=!showJalonForm"><i class="bi bi-plus-lg"></i> Ajouter un jalon</button>
+        </div>
+        <form *ngIf="showJalonForm && isPrestataire" [formGroup]="jalonForm" (ngSubmit)="ajouterJalon()" class="row g-2 mb-3 align-items-end">
+          <div class="col-md-5"><label class="form-label">Nom</label><input class="form-control" formControlName="nom"></div>
+          <div class="col-md-3"><label class="form-label">Date prévue</label><input type="date" class="form-control" formControlName="datePrevue"></div>
+          <div class="col-md-4"><label class="form-label">Description</label><input class="form-control" formControlName="description"></div>
+          <div class="col-12"><button type="submit" class="btn-primary-gradient" style="padding:.45rem .9rem">Enregistrer le jalon</button></div>
+        </form>
+        <div class="d-flex flex-column gap-2">
+          <div *ngFor="let j of jalons" class="d-flex justify-content-between align-items-center p-2" style="border:1px solid var(--saas-border);border-radius:10px">
+            <div>
+              <div style="font-weight:600">{{ j.nom }}</div>
+              <div style="font-size:.78rem;color:var(--saas-muted)"><i class="bi bi-calendar3"></i> {{ j.datePrevue || '—' }}<span *ngIf="j.description"> · {{ j.description }}</span></div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span [ngClass]="jalonBadge(j.statut)">{{ j.statut }}</span>
+              <ng-container *ngIf="isPrestataire">
+                <button class="icon-btn-muted" [title]="j.statut==='ATTEINT' ? 'Marquer à venir' : 'Marquer atteint'" (click)="toggleJalon(j)">
+                  <i class="bi" [ngClass]="j.statut==='ATTEINT' ? 'bi-arrow-counterclockwise' : 'bi-check2-circle'"></i>
+                </button>
+                <button class="icon-btn-muted text-danger" (click)="supprimerJalon(j)"><i class="bi bi-trash"></i></button>
+              </ng-container>
+            </div>
+          </div>
+          <div *ngIf="jalons.length===0" class="text-muted text-center py-3">Aucun jalon pour ce projet.</div>
+        </div>
+      </div>
+
+      <!-- Tâches (Module 5 — Kanban + IA) -->
+      <div *ngIf="activeTab==='taches'">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <span class="section-title">Tâches <span class="count-pill">{{ taches.length }}</span></span>
+          <div class="d-flex gap-2" *ngIf="isPrestataire">
+            <button class="btn-outline-saas" style="padding:.45rem .9rem;font-size:.8rem" (click)="analyserRisque()">
+              <i class="bi bi-graph-up-arrow"></i> Analyser le risque (IA)
+            </button>
+            <button class="btn-primary-gradient" style="padding:.45rem .9rem;font-size:.8rem" (click)="genererTaches()">
+              <i class="bi bi-robot"></i> Générer (IA)
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="risque" class="alert mb-3"
+             [ngClass]="risque.niveau==='ELEVE' ? 'alert-danger' : (risque.niveau==='MOYEN' ? 'alert-warning' : 'alert-success')">
+          <strong>Risque {{ risque.niveau }} ({{ risque.score }}/100)</strong> — {{ risque.message }}
+          <span *ngIf="risque.facteurs.length"> · {{ risque.facteurs.join(', ') }}</span>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-6 col-lg-3" *ngFor="let col of colonnes">
+            <div style="background:#F3F4F6;border-radius:12px;padding:.6rem;min-height:120px">
+              <div style="font-size:.72rem;font-weight:700;color:var(--saas-muted);text-transform:uppercase;margin-bottom:.5rem">
+                {{ col.label }} <span class="count-pill">{{ tachesParStatut(col.statut).length }}</span>
+              </div>
+              <div *ngFor="let t of tachesParStatut(col.statut)" class="content-card mb-2" style="padding:.55rem .65rem">
+                <div class="d-flex justify-content-between align-items-start gap-1">
+                  <strong style="font-size:.8rem">{{ t.titre }}</strong>
+                  <span [class]="prioriteBadge(t.priorite)" style="font-size:.6rem">{{ t.priorite }}</span>
+                </div>
+                <div *ngIf="t.membreNom" style="font-size:.7rem;color:var(--saas-muted)"><i class="bi bi-person"></i> {{ t.membreNom }}</div>
+                <div *ngIf="t.dateEcheance" style="font-size:.7rem" [style.color]="t.enRetard ? '#EF4444' : 'var(--saas-muted)'">
+                  <i class="bi bi-calendar3"></i> {{ t.dateEcheance }}{{ t.enRetard ? ' ⚠' : '' }}
+                </div>
+                <div class="d-flex gap-1 mt-1" *ngIf="isPrestataire">
+                  <button class="icon-btn-muted" title="Reculer" (click)="deplacerTache(t,-1)"><i class="bi bi-arrow-left"></i></button>
+                  <button class="icon-btn-muted" title="Avancer" (click)="deplacerTache(t,1)"><i class="bi bi-arrow-right"></i></button>
+                  <button class="icon-btn-muted text-danger" title="Supprimer" (click)="supprimerTache(t)"><i class="bi bi-trash"></i></button>
+                </div>
+              </div>
+              <div *ngIf="tachesParStatut(col.statut).length===0" style="font-size:.7rem;color:var(--saas-light);text-align:center;padding:.4rem">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Membres (Module 4 — Équipe) -->
+      <div *ngIf="activeTab==='membres'">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="section-title">Équipe <span class="count-pill">{{ membres.length }}</span></span>
+          <button *ngIf="isPrestataire" class="btn-primary-gradient" style="padding:.45rem .9rem;font-size:.8rem" (click)="showMembreForm=!showMembreForm">
+            <i class="bi bi-person-plus"></i> Ajouter un membre
+          </button>
+        </div>
+
+        <form *ngIf="showMembreForm && isPrestataire" [formGroup]="membreForm" (ngSubmit)="ajouterMembre()"
+              class="mb-3 p-3" style="border:1px solid var(--saas-border);border-radius:12px">
+          <div class="row g-2">
+            <div class="col-md-3"><input class="form-control" formControlName="prenom" placeholder="Prénom"></div>
+            <div class="col-md-3"><input class="form-control" formControlName="nom" placeholder="Nom"></div>
+            <div class="col-md-3"><input class="form-control" formControlName="email" placeholder="Email"></div>
+            <div class="col-md-3">
+              <select class="form-select" formControlName="roleProjet">
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <button type="submit" class="btn-primary-gradient" style="padding:.4rem .9rem;font-size:.8rem">Ajouter</button>
+            <button type="button" class="btn-outline-saas" style="padding:.4rem .9rem;font-size:.8rem" (click)="showMembreForm=false">Annuler</button>
+          </div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr><th>Membre</th><th>Email</th><th>Rôle</th><th *ngIf="isPrestataire" class="text-end">Action</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of membres">
+                <td><strong>{{ m.prenom }} {{ m.nom }}</strong></td>
+                <td>{{ m.email || '—' }}</td>
+                <td><span class="badge-category">{{ m.roleProjet }}</span></td>
+                <td *ngIf="isPrestataire" class="text-end">
+                  <button class="icon-btn-muted text-danger" title="Retirer" (click)="supprimerMembre(m)"><i class="bi bi-person-x"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="membres.length===0">
+                <td [attr.colspan]="isPrestataire ? 4 : 3" class="text-center text-muted py-4">Aucun membre dans l'équipe.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Réunions (Module 6 — Calendrier) -->
+      <div *ngIf="activeTab==='reunions'">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="section-title">Réunions <span class="count-pill">{{ reunions.length }}</span></span>
+          <button *ngIf="isPrestataire" class="btn-primary-gradient" style="padding:.45rem .9rem;font-size:.8rem" (click)="showReunionForm=!showReunionForm">
+            <i class="bi bi-calendar-plus"></i> Planifier une réunion
+          </button>
+        </div>
+
+        <form *ngIf="showReunionForm && isPrestataire" [formGroup]="reunionForm" (ngSubmit)="ajouterReunion()"
+              class="mb-3 p-3" style="border:1px solid var(--saas-border);border-radius:12px">
+          <div class="row g-2">
+            <div class="col-md-6"><label class="form-label">Titre</label><input class="form-control" formControlName="titre"></div>
+            <div class="col-md-3"><label class="form-label">Date &amp; heure</label><input type="datetime-local" class="form-control" formControlName="dateHeure"></div>
+            <div class="col-md-3"><label class="form-label">Durée (min)</label><input type="number" class="form-control" formControlName="dureeMinutes"></div>
+            <div class="col-md-8"><label class="form-label">Lien visio</label><input class="form-control" formControlName="lien" placeholder="https://meet..."></div>
+            <div class="col-12"><label class="form-label">Description</label><input class="form-control" formControlName="description"></div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <button type="submit" class="btn-primary-gradient" style="padding:.4rem .9rem;font-size:.8rem">Planifier</button>
+            <button type="button" class="btn-outline-saas" style="padding:.4rem .9rem;font-size:.8rem" (click)="showReunionForm=false">Annuler</button>
+          </div>
+        </form>
+
+        <div class="d-flex flex-column gap-2">
+          <div *ngFor="let r of reunions" class="content-card d-flex align-items-center gap-3" style="padding:.7rem .9rem">
+            <div class="kpi-icon-wrap" style="width:42px;height:42px;background:rgba(108,99,255,.12);color:var(--saas-p1)"><i class="bi bi-camera-video"></i></div>
+            <div class="flex-grow-1">
+              <div style="font-weight:600">{{ r.titre }}</div>
+              <div style="font-size:.78rem;color:var(--saas-muted)">
+                <i class="bi bi-clock"></i> {{ r.dateHeure }} · {{ r.dureeMinutes }} min
+                <a *ngIf="r.lien" [href]="r.lien" target="_blank" class="link-primary ms-2"><i class="bi bi-box-arrow-up-right"></i> Lien</a>
+              </div>
+            </div>
+            <span [ngClass]="r.statut==='PLANIFIEE' ? 'status-encours' : (r.statut==='TERMINEE' ? 'status-termine' : 'badge-admin')">{{ r.statut }}</span>
+            <button *ngIf="isPrestataire" class="icon-btn-muted text-danger" title="Supprimer" (click)="supprimerReunion(r)"><i class="bi bi-trash"></i></button>
+          </div>
+          <div *ngIf="reunions.length===0" class="text-center text-muted py-4">Aucune réunion planifiée.</div>
+        </div>
+      </div>
+
+      <!-- Activité -->
+      <div *ngIf="activeTab==='activite'">
+        <div class="d-flex flex-column gap-2">
+          <div class="activity-item" style="border-left-color:#6C63FF">
+            <div class="activity-icon" style="background:rgba(108,99,255,.12);color:#6C63FF"><i class="bi bi-flag-fill"></i></div>
+            <div class="flex-grow-1"><div class="activity-title">Projet créé</div><div class="activity-time">{{ projet.createdAt }}</div></div>
+          </div>
+          <div class="activity-item" *ngFor="let j of jalons" [style.border-left-color]="j.statut==='ATTEINT' ? '#10B981' : '#9CA3AF'">
+            <div class="activity-icon" [style.background]="j.statut==='ATTEINT' ? 'rgba(16,185,129,.12)' : '#F3F4F6'" [style.color]="j.statut==='ATTEINT' ? '#10B981' : '#9CA3AF'">
+              <i class="bi" [ngClass]="j.statut==='ATTEINT' ? 'bi-check2' : 'bi-hourglass-split'"></i>
+            </div>
+            <div class="flex-grow-1"><div class="activity-title">Jalon « {{ j.nom }} » — {{ j.statut }}</div><div class="activity-time">{{ j.datePrevue || '—' }}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-layout>

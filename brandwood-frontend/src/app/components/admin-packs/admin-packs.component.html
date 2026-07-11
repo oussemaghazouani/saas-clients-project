@@ -1,0 +1,68 @@
+<app-layout title="Gestion des packs">
+  <div *ngIf="message" class="alert alert-success mb-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn-primary-gradient" (click)="nouveau()"><i class="bi bi-plus-lg"></i> Nouveau pack</button>
+  </div>
+
+  <div class="content-card mb-3" *ngIf="showForm">
+    <div class="section-title mb-3">{{ editingId ? 'Modifier le pack' : 'Nouveau pack' }}</div>
+    <form [formGroup]="form" (ngSubmit)="enregistrer()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nom</label>
+          <input class="form-control" formControlName="nom" [class.is-invalid]="f['nom'].touched && f['nom'].invalid">
+          <div class="invalid-feedback" *ngIf="f['nom'].touched && f['nom'].invalid">Nom obligatoire (max 100).</div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Prix (€)</label>
+          <input type="number" class="form-control" formControlName="prix">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Description</label>
+          <input class="form-control" formControlName="description">
+        </div>
+        <div class="col-md-3"><label class="form-label">Projets max</label><input type="number" class="form-control" formControlName="nbProjetsMax"></div>
+        <div class="col-md-3"><label class="form-label">Clients max</label><input type="number" class="form-control" formControlName="nbClientsMax"></div>
+        <div class="col-md-3"><label class="form-label">Durée (mois)</label><input type="number" class="form-control" formControlName="dureeMois"></div>
+        <div class="col-md-3 d-flex align-items-end">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" formControlName="actif" id="packActif">
+            <label class="form-check-label ms-1" for="packActif">Actif</label>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn-primary-gradient">Enregistrer</button>
+        <button type="button" class="btn-outline-saas" (click)="annuler()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="content-card">
+    <div *ngIf="loading" class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Nom</th><th>Prix</th><th>Projets</th><th>Clients</th><th>Durée</th><th>Actif</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of packs">
+            <td><strong>{{ p.nom }}</strong><div style="font-size:.75rem;color:var(--saas-muted)">{{ p.description }}</div></td>
+            <td>{{ p.prix }} €</td>
+            <td>{{ p.nbProjetsMax }}</td>
+            <td>{{ p.nbClientsMax }}</td>
+            <td>{{ p.dureeMois }} mois</td>
+            <td><span [class]="p.actif ? 'badge-available' : 'badge-pending'">{{ p.actif ? 'Actif' : 'Inactif' }}</span></td>
+            <td class="text-end">
+              <button class="icon-btn-muted" title="Modifier" (click)="editer(p)"><i class="bi bi-pencil"></i></button>
+              <button class="icon-btn-muted text-danger" title="Supprimer" (click)="supprimer(p)"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="packs.length===0"><td colspan="7" class="text-center text-muted py-4">Aucun pack.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>

@@ -1,0 +1,86 @@
+<app-layout title="Statistiques">
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div *ngIf="!loading && data">
+
+    <!-- Analyse IA -->
+    <div class="content-card mb-4" style="border-left:4px solid var(--saas-primary);">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="section-title mb-0"><i class="bi bi-robot me-2"></i>Analyse IA</div>
+        <button class="btn btn-sm btn-primary-gradient" (click)="analyserIa()" [disabled]="loadingInsights">
+          <span *ngIf="loadingInsights" class="spinner-border spinner-border-sm me-1"></span>
+          <i *ngIf="!loadingInsights" class="bi bi-stars me-1"></i>
+          {{ insights ? 'Régénérer' : 'Analyser mes données' }}
+        </button>
+      </div>
+
+      <div *ngIf="!insights && !loadingInsights" style="font-size:.85rem;color:var(--saas-muted);margin-top:.6rem;">
+        Cliquez sur « Analyser mes données » pour obtenir des observations et une recommandation générées automatiquement.
+      </div>
+
+      <div *ngIf="insights" style="margin-top:.8rem;">
+        <ul style="margin:0;padding-left:1.1rem;font-size:.86rem;">
+          <li *ngFor="let o of insights.insights" style="margin-bottom:.35rem;">{{ o }}</li>
+        </ul>
+        <div *ngIf="insights.recommandation" class="mt-2 p-2"
+             style="background:rgba(108,99,255,.08);border-radius:8px;font-size:.85rem;">
+          <strong><i class="bi bi-lightbulb me-1"></i>Recommandation :</strong> {{ insights.recommandation }}
+        </div>
+        <div style="font-size:.7rem;color:var(--saas-light);margin-top:.4rem;">
+          Source : {{ insights.source === 'ia' ? 'IA générative (Claude)' : 'moteur d\'analyse local' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-3" *ngFor="let k of data.kpis">
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-label">{{ k.label }}</div>
+            <div class="kpi-value">{{ k.valeur }}</div>
+            <div style="font-size:.72rem;color:var(--saas-light);margin-top:.3rem;">{{ k.sousLabel }}</div>
+          </div>
+          <div class="kpi-icon-wrap" [style.background]="k.couleur + '20'" [style.color]="k.couleur">
+            <i class="bi" [ngClass]="k.icone"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3">
+      <div class="col-12 col-lg-6" *ngFor="let c of data.charts">
+        <div class="content-card">
+          <div class="section-title mb-3">{{ c.titre }}</div>
+
+          <!-- DONUT -->
+          <div *ngIf="c.type==='donut'" class="d-flex align-items-center gap-4 flex-wrap">
+            <div class="chart-donut" [style.background]="donut(c.points)">
+              <div class="chart-donut-hole">{{ total(c.points) }}</div>
+            </div>
+            <div class="flex-grow-1" style="min-width:160px">
+              <div *ngFor="let p of c.points" class="d-flex align-items-center justify-content-between mb-2" style="font-size:.82rem">
+                <span><span class="chart-dot" [style.background]="p.couleur"></span> {{ p.label }}</span>
+                <strong>{{ p.valeur }} <span style="color:var(--saas-muted);font-weight:400">({{ pct(p, c.points) }}%)</span></strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- BAR -->
+          <div *ngIf="c.type==='bar'">
+            <div *ngFor="let p of c.points" class="mb-2">
+              <div class="d-flex justify-content-between" style="font-size:.8rem">
+                <span>{{ p.label }}</span><strong>{{ p.valeur }}</strong>
+              </div>
+              <div class="chart-bar-track">
+                <div class="chart-bar-fill" [style.width.%]="p.valeur / max(c.points) * 100" [style.background]="p.couleur"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-layout>

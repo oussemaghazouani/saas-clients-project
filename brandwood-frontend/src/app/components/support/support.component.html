@@ -1,0 +1,115 @@
+<app-layout title="Support &amp; Tickets">
+  <div *ngIf="message" class="alert alert-success mb-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+
+  <div class="row g-3">
+    <!-- Liste des tickets -->
+    <div class="col-lg-4">
+      <div class="content-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="section-title">Mes tickets <span class="count-pill">{{ tickets.length }}</span></span>
+          <button *ngIf="isClient" class="btn-primary-gradient" style="padding:.4rem .8rem;font-size:.8rem" (click)="nouveau()">
+            <i class="bi bi-plus-lg"></i> Nouveau
+          </button>
+        </div>
+        <div *ngIf="loading" class="text-center py-3"><div class="spinner-border text-primary"></div></div>
+        <div *ngFor="let t of tickets" (click)="ouvrir(t.id)" class="ticket-item" [class.active]="selected?.id===t.id">
+          <div class="d-flex justify-content-between align-items-start gap-1">
+            <strong style="font-size:.85rem">{{ t.sujet }}</strong>
+            <span [class]="prioBadge(t.priorite)" style="font-size:.6rem">{{ t.priorite }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-1">
+            <span [class]="badge(t.statut)" style="font-size:.62rem">{{ t.statut }}</span>
+            <span style="font-size:.7rem;color:var(--saas-muted)"><i class="bi bi-chat-dots"></i> {{ t.nbMessages }}</span>
+          </div>
+        </div>
+        <div *ngIf="!loading && tickets.length===0" class="text-center text-muted py-3" style="font-size:.85rem">Aucun ticket.</div>
+      </div>
+    </div>
+
+    <!-- Détail / création -->
+    <div class="col-lg-8">
+      <!-- Création -->
+      <div class="content-card" *ngIf="showForm">
+        <div class="section-title mb-3">Nouveau ticket</div>
+        <form [formGroup]="form" (ngSubmit)="creer()">
+          <div class="mb-2">
+            <label class="form-label">Sujet</label>
+            <input class="form-control" formControlName="sujet" [class.is-invalid]="f['sujet'].touched && f['sujet'].invalid">
+          </div>
+          <div class="mb-2"><label class="form-label">Description</label><textarea class="form-control" rows="3" formControlName="description"></textarea></div>
+          <div class="mb-3">
+            <label class="form-label">Priorité</label>
+            <select class="form-select" formControlName="priorite"><option *ngFor="let p of priorites" [value]="p">{{ p }}</option></select>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn-primary-gradient">Créer le ticket</button>
+            <button type="button" class="btn-outline-saas" (click)="showForm=false">Annuler</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Détail ticket -->
+      <div class="content-card" *ngIf="selected && !showForm">
+        <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+          <div>
+            <h2 style="font-size:1.2rem;font-weight:700;margin:0">{{ selected.sujet }}</h2>
+            <div class="mt-1"><span [class]="badge(selected.statut)">{{ selected.statut }}</span> <span [class]="prioBadge(selected.priorite)">{{ selected.priorite }}</span></div>
+          </div>
+          <select *ngIf="isPrestataire" class="form-select" style="width:auto" [ngModel]="selected.statut" (ngModelChange)="changerStatut($event)">
+            <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <p style="color:var(--saas-muted);font-size:.85rem">{{ selected.description || '—' }}</p>
+        <div style="font-size:.75rem;color:var(--saas-light);margin-bottom:1rem">Client : {{ selected.clientNom }} · Prestataire : {{ selected.prestataireNom }}</div>
+
+        <!-- Assistant IA (prestataire) -->
+        <div *ngIf="isPrestataire" class="mb-3 p-3" style="background:rgba(108,99,255,.06);border:1px dashed var(--saas-primary);border-radius:10px;">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span style="font-weight:600;font-size:.88rem;color:var(--saas-primary)"><i class="bi bi-robot me-1"></i>Assistant IA</span>
+            <button class="btn-primary-gradient" style="padding:.35rem .75rem;font-size:.78rem" (click)="analyserIa()" [disabled]="iaLoading">
+              <span *ngIf="iaLoading" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!iaLoading" class="bi bi-stars me-1"></i>{{ ia ? 'Ré-analyser' : 'Analyser le ticket' }}
+            </button>
+          </div>
+
+          <div *ngIf="ia" class="mt-2">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <span [class]="prioBadge(ia.prioriteSuggeree)" style="font-size:.62rem">Priorité : {{ ia.prioriteSuggeree }}</span>
+              <span class="badge-category" style="font-size:.62rem">{{ ia.categorie }}</span>
+              <span class="badge-available" style="font-size:.62rem">Sentiment : {{ ia.sentiment }}</span>
+            </div>
+            <div style="font-size:.8rem;"><strong>Résumé :</strong> {{ ia.resume }}</div>
+            <div class="mt-2 p-2" style="background:#fff;border:1px solid var(--saas-border,#e5e7eb);border-radius:8px;font-size:.8rem;white-space:pre-line;">{{ ia.reponseSuggeree }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span style="font-size:.68rem;color:var(--saas-light)">Source : {{ ia.source === 'ia' ? 'IA générative (Claude)' : 'moteur local' }}</span>
+              <button class="btn-outline-saas" style="padding:.3rem .7rem;font-size:.75rem" (click)="insererReponse()"
+                      [disabled]="selected.statut === 'FERME'"><i class="bi bi-box-arrow-in-down me-1"></i>Insérer la réponse</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title mb-2">Conversation</div>
+        <div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:.25rem">
+          <div *ngFor="let m of selected.messages" class="ticket-msg" [class.mine]="m.auteurRole === (isClient ? 'CLIENT' : 'PRESTATAIRE')">
+            <div class="ticket-msg-author">{{ m.auteurNom }} <span>· {{ m.auteurRole }}</span></div>
+            <div>{{ m.contenu }}</div>
+          </div>
+          <div *ngIf="!selected.messages || !selected.messages.length" class="text-muted text-center py-2" style="font-size:.82rem">Aucun message. Démarrez la conversation.</div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3" *ngIf="selected.statut !== 'FERME'">
+          <input class="form-control" [(ngModel)]="nouveauMessage" placeholder="Votre message…" (keyup.enter)="envoyer()">
+          <button class="btn-primary-gradient" style="width:46px" (click)="envoyer()" [disabled]="!nouveauMessage.trim()"><i class="bi bi-send"></i></button>
+        </div>
+        <div *ngIf="selected.statut === 'FERME'" class="alert alert-info mt-3" style="font-size:.82rem">Ce ticket est fermé.</div>
+      </div>
+
+      <!-- Rien sélectionné -->
+      <div class="content-card text-center text-muted py-5" *ngIf="!selected && !showForm">
+        <i class="bi bi-headset" style="font-size:2rem"></i>
+        <p class="mt-2">Sélectionnez un ticket<span *ngIf="isClient"> ou créez-en un nouveau</span>.</p>
+      </div>
+    </div>
+  </div>
+</app-layout>

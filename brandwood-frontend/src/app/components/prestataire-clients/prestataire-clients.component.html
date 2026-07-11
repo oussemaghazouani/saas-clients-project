@@ -1,0 +1,73 @@
+<app-layout title="Mes clients">
+  <div *ngIf="message" class="alert alert-success mb-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+
+  <div *ngIf="dernierIdentifiant" class="alert alert-info mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span><i class="bi bi-key me-1"></i> Identifiant de connexion du client : <strong>{{ dernierIdentifiant }}</strong> — à communiquer avec le mot de passe défini.</span>
+    <button class="btn-outline-saas" style="padding:.3rem .7rem" (click)="copier(dernierIdentifiant)"><i class="bi bi-clipboard"></i> Copier</button>
+  </div>
+
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn-primary-gradient" (click)="nouveau()"><i class="bi bi-person-plus"></i> Provisionner un client</button>
+  </div>
+
+  <div class="content-card mb-3" *ngIf="showForm">
+    <div class="section-title mb-3">Nouveau client</div>
+    <form [formGroup]="form" (ngSubmit)="provisionner()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Prénom</label>
+          <input class="form-control" formControlName="firstName" [class.is-invalid]="f['firstName'].touched && f['firstName'].invalid">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nom</label>
+          <input class="form-control" formControlName="lastName" [class.is-invalid]="f['lastName'].touched && f['lastName'].invalid">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Mot de passe</label>
+          <input type="text" class="form-control" formControlName="password" [class.is-invalid]="f['password'].touched && f['password'].invalid">
+          <div class="invalid-feedback" *ngIf="f['password'].touched && f['password'].invalid">8+ caractères, 1 majuscule, 1 minuscule, 1 chiffre.</div>
+        </div>
+        <div class="col-md-6"><label class="form-label">Téléphone</label><input class="form-control" formControlName="phone"></div>
+        <div class="col-md-6"><label class="form-label">Domaine d'activité</label><input class="form-control" formControlName="domaineActivite"></div>
+        <div class="col-md-6"><label class="form-label">SIRET</label><input class="form-control" formControlName="siret"></div>
+        <div class="col-md-8"><label class="form-label">Adresse</label><input class="form-control" formControlName="adresse"></div>
+        <div class="col-md-4"><label class="form-label">Nb employés</label><input type="number" class="form-control" formControlName="nombreEmployes"></div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn-primary-gradient" [disabled]="submitting">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm"></span> Provisionner
+        </button>
+        <button type="button" class="btn-outline-saas" (click)="annuler()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="content-card">
+    <div class="section-title mb-3">Clients <span class="count-pill">{{ clients.length }}</span></div>
+    <div *ngIf="loading" class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table align-middle">
+        <thead>
+          <tr><th>Client</th><th>Identifiant</th><th>Domaine</th><th>Employés</th><th>Statut</th><th class="text-end">Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of clients">
+            <td><strong>{{ c.firstName }} {{ c.lastName }}</strong></td>
+            <td style="font-size:.8rem">{{ c.identifiantUnique }}</td>
+            <td>{{ c.domaineActivite || '—' }}</td>
+            <td>{{ c.nombreEmployes ?? '—' }}</td>
+            <td><span [class]="c.actif ? 'badge-available' : 'badge-pending'">{{ c.actif ? 'Actif' : 'Désactivé' }}</span></td>
+            <td class="text-end">
+              <button class="icon-btn-muted" [title]="c.actif ? 'Désactiver' : 'Réactiver'" (click)="toggle(c)">
+                <i class="bi" [ngClass]="c.actif ? 'bi-slash-circle' : 'bi-check-circle'"></i>
+              </button>
+              <button class="icon-btn-muted text-danger" title="Supprimer" (click)="supprimer(c)"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="clients.length===0"><td colspan="6" class="text-center text-muted py-4">Aucun client. Provisionnez votre premier client.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-layout>

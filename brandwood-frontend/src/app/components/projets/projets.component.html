@@ -1,0 +1,66 @@
+<app-layout title="Projets">
+  <div *ngIf="message" class="alert alert-success mb-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mb-3">{{ error }}</div>
+
+  <div class="d-flex justify-content-end mb-3" *ngIf="isPrestataire">
+    <button class="btn-primary-gradient" (click)="nouveau()"><i class="bi bi-plus-lg"></i> Nouveau projet</button>
+  </div>
+
+  <div class="content-card mb-3" *ngIf="showForm">
+    <div class="section-title mb-3">Nouveau projet</div>
+    <form [formGroup]="form" (ngSubmit)="creer()">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label">Nom</label>
+          <input class="form-control" formControlName="nom" [class.is-invalid]="f['nom'].touched && f['nom'].invalid">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Client</label>
+          <select class="form-select" formControlName="startupId" [class.is-invalid]="f['startupId'].touched && f['startupId'].invalid">
+            <option [ngValue]="null">— Choisir un client —</option>
+            <option *ngFor="let c of clients" [ngValue]="c.id">{{ c.firstName }} {{ c.lastName }}</option>
+          </select>
+        </div>
+        <div class="col-12"><label class="form-label">Description</label><input class="form-control" formControlName="description"></div>
+        <div class="col-md-3"><label class="form-label">Statut</label><select class="form-select" formControlName="statut"><option *ngFor="let s of statuts" [value]="s">{{ s }}</option></select></div>
+        <div class="col-md-3"><label class="form-label">Budget (€)</label><input type="number" class="form-control" formControlName="budget"></div>
+        <div class="col-md-3"><label class="form-label">Début</label><input type="date" class="form-control" formControlName="dateDebut"></div>
+        <div class="col-md-3"><label class="form-label">Fin</label><input type="date" class="form-control" formControlName="dateFin"></div>
+        <div class="col-12"><label class="form-label">Technologies (séparées par des virgules)</label><input class="form-control" formControlName="technologies" placeholder="Angular, Spring Boot"></div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn-primary-gradient" [disabled]="submitting"><span *ngIf="submitting" class="spinner-border spinner-border-sm"></span> Créer</button>
+        <button type="button" class="btn-outline-saas" (click)="annuler()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div class="row g-3" *ngIf="!loading">
+    <div class="col-12 col-md-6 col-xl-4" *ngFor="let p of projets">
+      <div class="project-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span [ngClass]="badge(p.statut)">{{ p.statut }}</span>
+          <span style="font-size:.75rem;color:var(--saas-muted)">{{ p.budget ? (p.budget + ' €') : '' }}</span>
+        </div>
+        <div style="font-size:1rem;font-weight:700;margin-bottom:.35rem">{{ p.nom }}</div>
+        <p class="project-desc">{{ p.description || 'Aucune description.' }}</p>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span style="font-size:.75rem;color:var(--saas-muted)">Progression ({{ p.jalonsAtteints }}/{{ p.nbJalons }} jalons)</span>
+            <span style="font-size:.78rem;font-weight:700;color:var(--saas-p1)">{{ p.progression }}%</span>
+          </div>
+          <div class="progress-saas"><div class="progress-saas-fill" [style.width.%]="p.progression"></div></div>
+        </div>
+        <div class="d-flex align-items-center gap-1 mb-3" style="font-size:.78rem;color:var(--saas-muted)">
+          <i class="bi bi-person"></i> {{ isPrestataire ? p.clientNom : p.prestataireNom }}
+        </div>
+        <a [routerLink]="['/projets', p.id]" class="btn-see-project"><i class="bi bi-folder2-open"></i> Voir le projet</a>
+      </div>
+    </div>
+    <div class="col-12" *ngIf="projets.length===0">
+      <div class="content-card text-center text-muted py-4">Aucun projet.<span *ngIf="isPrestataire"> Créez votre premier projet.</span></div>
+    </div>
+  </div>
+</app-layout>
