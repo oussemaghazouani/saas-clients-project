@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "▶ Backend: Spring Boot",
+      "type": "shell",
+      "command": "mvn spring-boot:run",
+      "options": {
+        "cwd": "${workspaceFolder}/brandwood-backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "saasclient"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "▶ Frontend: Angular Dev Server",
+      "type": "shell",
+      "command": "npm start",
+      "options": {
+        "cwd": "${workspaceFolder}/brandwood-frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "saasclient"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "▶▶ Démarrer Backend + Frontend",
+      "dependsOn": [
+        "▶ Backend: Spring Boot",
+        "▶ Frontend: Angular Dev Server"
+      ],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "🧪 Backend: Tests Maven",
+      "type": "shell",
+      "command": "mvn test",
+      "options": {
+        "cwd": "${workspaceFolder}/brandwood-backend"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "📦 Frontend: Build Production",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/brandwood-frontend"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

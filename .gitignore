@@ -1,0 +1,38 @@
+# ===== Dépendances & build =====
+# Angular / Node
+**/node_modules/
+**/dist/
+**/.angular/
+**/tmp/
+**/out-tsc/
+**/bazel-out/
+
+# Java / Maven (Spring Boot)
+**/target/
+*.class
+
+# ===== Logs =====
+*.log
+**/npm-debug.log*
+**/yarn-error.log*
+
+# ===== Environnement / secrets =====
+.env
+*.env
+**/application-local.properties
+
+# ===== IDE =====
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+*.code-workspace.bak
+
+# ===== OS =====
+Thumbs.db
+ehthumbs.db
+.DS_Store
+desktop.ini

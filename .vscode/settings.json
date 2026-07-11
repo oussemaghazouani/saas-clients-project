@@ -1,0 +1,17 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.encoding": "utf8",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.eclipse.downloadSources": true,
+  "java.maven.downloadSources": true,
+  "spring-boot.ls.java.home": "",
+  "typescript.preferences.quoteStyle": "single",
+  "angular.enable-strict-mode-prompt": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.html, ${capture}.css, ${capture}.spec.ts",
+    "pom.xml": ".mvn, mvnw, mvnw.cmd"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "🐛 Debug: Spring Boot",
+      "request": "launch",
+      "mainClass": "com.saasclient.SaasClientApplication",
+      "projectName": "saas-client",
+      "args": "",
+      "envFile": "${workspaceFolder}/brandwood-backend/.env",
+      "vmArgs": "-Dspring.profiles.active=dev"
+    },
+    {
+      "type": "chrome",
+      "name": "🐛 Debug: Angular (Chrome)",
+      "request": "launch",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/brandwood-frontend/src",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/*"
+      },
+      "preLaunchTask": "▶ Frontend: Angular Dev Server"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Full Stack Debug",
+      "configurations": ["🐛 Debug: Spring Boot", "🐛 Debug: Angular (Chrome)"]
+    }
+  ]
+}
