@@ -1,0 +1,17 @@
+<div class="chatbot" *ngIf="loggedIn">
+  <button class="chatbot-fab" (click)="toggle()" [title]="open ? 'Fermer' : 'Assistant IA'">
+    <i class="bi" [ngClass]="open ? 'bi-x-lg' : 'bi-robot'"></i>
+  </button>
+
+  <div class="chatbot-panel" *ngIf="open">
+    <div class="chatbot-header"><i class="bi bi-robot me-2"></i> Assistant SaaS Client</div>
+    <div class="chatbot-body">
+      <div *ngFor="let msg of messages" class="chatbot-msg" [ngClass]="msg.from">{{ msg.text }}</div>
+      <div *ngIf="sending" class="chatbot-msg bot">…</div>
+    </div>
+    <form class="chatbot-input" (ngSubmit)="send()">
+      <input type="text" [(ngModel)]="input" name="msg" placeholder="Écrivez votre message…" autocomplete="off">
+      <button type="submit" [disabled]="sending"><i class="bi bi-send"></i></button>
+    </form>
+  </div>
+</div>
